@@ -1,10 +1,15 @@
 import discord
+import os
+from dotenv import load_dotenv
 from discord.ext.commands import Bot
 import smtplib
 
 sent = ['ap.server.management@gmail.com']
-text = ['wowreallywhatashame']
+text = [os.environ.get('MGMT-EMAIL-PWRD')]
 
+load_dotenv()
+
+TOKEN = os.environ.get('TOKEN')
 client = discord.Client()
 Client = Bot('!')
 
@@ -186,10 +191,9 @@ def send_to_admin(txt):
     smtpObj.ehlo()
     smtpObj.starttls()
     smtpObj.login(sent[0], text[0])
-    # smtpObj.sendmail(sent[0], '7326092815@vtext.com', txt)
-    # smtpObj.sendmail(sent[0], '7326680970@txt.att.net', txt)
+    # smtpObj.sendmail(sent[0], os.environ.get('ROBERT'), txt)
     smtpObj.sendmail(sent[0], 'newpydev@gmail.com', 'Subject: AP Server Management\n' + txt)
     smtpObj.quit()
 
 
-client.run('NzU2NjgwNjU3NTcyNDYyNjQz.X2VXxw.JDsqEFzLXUJ2WFsjTNYk4bkEiUg')   # TODO: ADD TOKEN
+client.run(TOKEN)   # TODO: ADD TOKEN
