@@ -1,1 +1,1 @@
-worker: python ./ApDevBot.py
+worker: python ApDevBot.py
