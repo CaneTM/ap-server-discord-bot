@@ -4,14 +4,17 @@ from dotenv import load_dotenv
 from discord.ext.commands import Bot
 import smtplib
 
-sent = ['ap.server.management@gmail.com']
-text = [os.environ.get('MGMT-EMAIL-PWRD')]
-
 load_dotenv()
 
+# environment variables
 TOKEN = os.environ.get('TOKEN')
+MGMT = os.environ.get('MGMT-EMAIL-PWRD')
+
 client = discord.Client()
 Client = Bot('!')
+
+sent = ['ap.server.management@gmail.com']
+text = [MGMT]
 
 docMessage = "This bot is for admin use only. Much of the functionality has already been restricted to admin-only.\n" \
              "Access to the source code must be approved by an admin\n\n" \
@@ -192,7 +195,7 @@ def send_to_admin(txt):
     smtpObj.starttls()
     smtpObj.login(sent[0], text[0])
     # smtpObj.sendmail(sent[0], os.environ.get('ROBERT'), txt)
-    smtpObj.sendmail(sent[0], 'newpydev@gmail.com', 'Subject: AP Server Management\n' + txt)
+    smtpObj.sendmail(sent[0], os.environ.get('ME'), 'Subject: AP Server Management\n' + txt)
     smtpObj.quit()
 
 
