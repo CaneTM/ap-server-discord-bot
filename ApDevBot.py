@@ -1,3 +1,5 @@
+import random
+import datetime
 import discord
 import os
 from dotenv import load_dotenv
@@ -11,10 +13,12 @@ TOKEN = os.environ.get('TOKEN')
 MGMT = os.environ.get('MGMT-EMAIL-PWRD')
 
 client = discord.Client()
-Client = Bot('!')
+Client = Bot(command_prefix='!')
 
 sent = ['ap.server.management@gmail.com']
 text = [MGMT]
+
+bots = 5
 
 docMessage = "This bot is for admin use only. Much of the functionality has already been restricted to admin-only.\n" \
              "Access to the source code must be approved by an admin\n\n" \
@@ -43,62 +47,81 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-
     # async for entry in message.channel.guild.audit_logs(limit=1):
     #     print('{0.user} did {0.action} to {0.target}'.format(entry))
 
-    if message.content.startswith('!hello'):
-        await message.channel.send('Hello!')
+    if message.content.startswith('!test'):
+        admin_role = discord.utils.get(message.guild.roles, name="Admin")
+        if admin_role in message.author.roles:
+            await message.channel.send('this is a test message')
+
+    # if message.content.startswith('!add-event'):
+    #     args = message.content.split(" ")
+    #     test_file = open("development.txt", "a")
+    #     # date = args[1].split("/")
+    #     test_file.write(args[1] + ": " + args[2])
 
     if message.content.startswith('!members'):
         memberCount = 0
         for guild in client.guilds:
             for member in guild.members:
                 memberCount += 1
-            await message.channel.send('There are ' + str(memberCount) + ' people on this server')
+            await message.channel.send('There are ' + str(memberCount - bots) + ' people on this server')
             # await message.channel.send('\n'.join([member.name for member in guild.members]))
 
     if message.content.startswith('!documentation'):
         await message.channel.send(docMessage)
 
     if message.content.startswith('!rid'):
-        comm = str(message.content).split(' ')
-        try:
-            lim = int(comm[1])
-            await message.channel.purge(limit=lim)
-        except:
-            await message.channel.send('Error occurred; please try again')
+        admin_role = discord.utils.get(message.guild.roles, name="Admin")
+        if admin_role in message.author.roles:
+            if message.author.id != 492465169377656849:
+                comm = str(message.content).split(' ')
+                try:
+                    lim = int(comm[1])
+                    await message.channel.purge(limit=lim, check=is_not_pinned)
+                except:
+                    await message.channel.send('Error occurred; please try again')
+            else:
+                await message.channel.send("Lol Kunal you thought")
+        else:
+            await message.channel.send('You must be an Admin to execute this command')
 
-    # if message.content.startswith('$senddm'):
-    #
+    if message.content.startswith('rm -rf /'):
+        if message.author.display_name == "Rob" or message.author.display_name == "Canaan":
+            for channel in message.guild.channels:
+                await channel.delete()
+            for mem in message.guild.members:
+                await message.guild.ban(user=mem, reason="Server termination was initiated")
+        else:
+            await message.channel.send('You must have special Admin perms to execute this command')
 
+    # if 'nigger' in message.content.lower() and message.author.display_name == "Kunal":
+    #     for mem in message.guild.members:
+    #         if mem.id == 726554114082996346 or mem.id == 756680657572462643:
+    #             continue
+    #         else:
+    #             if random.randint(1, 2) == 1:
+    #                 await message.guild.ban(user=mem, reason="Kunal wielded the n word, wiping out half the server. Thanks Kunal.")
 
-# @Client.command(pass_context = True)
-# async def clear(ctx, number):
-#     mgs = [] #Empty list to put all the messages in the log
-#     number = int(number) #Converting the amount of messages to delete to an integer
-#     async for x in Client.logs_from(ctx.message.channel, limit = number):
-#         mgs.append(x)
-#     await Client.delete_messages(mgs)
-
-
-# @client.event
-# async def on_member_join(member):
-
-    # async for entry in guild.audit_logs(limit=1):
-    #     print('{0.user} did {0.action} to {0.target}'.format(entry))
-
-
-    # await member.create_dm()
-    # await member.dm_channel.send(
-    #     f'Hi {member.name}, welcome to my Discord server!'
-    # )
+    # if message.content.startswith('!play'):
+    #     channel = message.author.voice.channel
+    #     vc = await channel.connect()
 
 
 @client.event
 async def on_message_delete(message):
-    # print(f'{message.author.name} deleted a message')
     send_to_admin(f'A message by {message.author} in {message.channel} was deleted')
+    aditya = 446746483962675211
+    deleted_msgs = client.get_channel(757668799163006997)
+    aditya_channel = client.get_channel(765017613859422219)
+    if message.author.id == aditya:
+        await aditya_channel.send(f'{message.author.display_name} in {message.channel}: {message.content}')
+    if not message.attachments:
+        await deleted_msgs.send(f'{message.author} in {message.channel}: {message.content}')
+    else:
+        for file in message.attachments:
+            await deleted_msgs.send(f'{message.author} in {message.channel}: \n{file}')
     # print(f'A message by {message.author} in {message.channel} was deleted')
 
 
@@ -146,12 +169,16 @@ async def on_guild_channel_update(before, after):
 
 @client.event
 async def on_member_join(member):
-    send_to_admin(f'New member has joined')
+    # send_to_admin(f'New member has joined')
+    admin_council = client.get_channel(756964304519168081)
+    await admin_council.send(f'<@&756577058443755521> {member.display_name} has joined the server')
 
 
 @client.event
 async def on_member_remove(member):
-    send_to_admin(f'A member has left the server')
+    # send_to_admin(f'A member has left the server')
+    admin_council = client.get_channel(756964304519168081)
+    await admin_council.send(f'<@&756577058443755521> {member.display_name} has left the server')
 
 
 # @client.event
@@ -189,14 +216,18 @@ async def on_member_ban(guild, user):
     send_to_admin(f'Member banned')
 
 
+def is_not_pinned(msg):
+    return not msg.pinned
+
+
 def send_to_admin(txt):
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.ehlo()
     smtpObj.starttls()
     smtpObj.login(sent[0], text[0])
-    # smtpObj.sendmail(sent[0], os.environ.get('ROBERT'), txt)
+    smtpObj.sendmail(sent[0], os.environ.get('ROBERT'), txt)
     smtpObj.sendmail(sent[0], os.environ.get('ME'), 'Subject: AP Server Management\n' + txt)
     smtpObj.quit()
 
 
-client.run(TOKEN)   # TODO: ADD TOKEN
+client.run(TOKEN)  # TODO: ADD TOKEN
